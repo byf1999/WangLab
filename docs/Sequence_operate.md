@@ -45,10 +45,6 @@ The following subcommands are supported in the `Sequence_operate` module:
 
 ## Command Line Options
 
-# extract_seqs
-
-
-
 ### extract_seqs
 
 - `-i` or `--input`: Position file. It should contain 3 columns, each represent sequence name, start position, end position ,respectively. If only 1 column are given, the extraction will be according to sequence names. REQUIRED.
