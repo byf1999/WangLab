@@ -41,16 +41,15 @@ install_requires = [ "argcomplete",
                      "numpy",
                      "selenium",
                      "cutadapt",
-                     "bowtie",
+                     "bowtie; platform_system == 'Linux'",
                      "openpyxl",
-                     "MACS3"
-                      ]
-
+                     "MACS3; platform_system == 'Linux'",
+                    ]
 tests_requires = [ 'pytest' ]
 
 
 def main():
-    if sys.version_info < (3,8):
+    if sys.version_info < (3,9):
         sys.stderr.write("CRITICAL: Python version must >= 3.8!\n")
         sys.exit(1)
 

@@ -4,6 +4,5 @@ pandas
 numpy
 selenium
 cutadapt
-bowtie
 openpyxl
-MACS3
+samtools

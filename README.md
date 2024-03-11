@@ -11,13 +11,13 @@ The project contains 4 modules: [`Sequence_operate`](#Sequence_operate), [`TIS`]
 
 ## Install
 
-The easiest way to install WangLab in through pip:
+The easiest way to install WangLab in through PYPI:
 
 ```bash
 pip install WangLab
 ```
 
-If TIS/RNA_seq/ChIP_seq modules are used, users need to manually install Bowtie through conda or apt. **Note**: Bowtie do not provide releases for **Windows** systems by the time this document is written.
+If TIS/RNA_seq/ChIP_seq modules are used, users need to manually install Bowtie through conda or apt. MACS is required if ChIP_seq module is needed. **Note**: Bowtie/MACS do not provide releases for **Windows** systems by the time this document is written.
 
 ```bash
 # conda:
@@ -26,6 +26,13 @@ conda install bowtie -c bioconda
 # apt
 sudo apt install bowtie
 ```
+
+```bash
+# install MACS through pip
+pip install macs3
+```
+
+Users can also install from source through the following way:
 
 
 
