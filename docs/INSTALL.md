@@ -10,13 +10,19 @@ The easiest way to install WangLab in through PYPI.
 pip install WangLab
 ```
 
-**Note**: Bowtie/MACS do not provide releases for **Windows** systems by the time this document is written, so users on __Windows__ OS can not use full function in these modules.Install from source
+**Note**: Bowtie/MACS do not provide releases for **Windows** systems by the time this document is written, so users on __Windows__ OS can not use full function in these modules.
+
+## Install from source
+
+### For Linux users
 
 To install WangLab from source, users first download and extract .zip file from Github. Then, place the whole file folder __WangLab__ in __WangLab-main__ into __[ANACONDA_PATH/lib/python3.x/site-packages__. In the meanwhile, place the script file __wanglab__ in __WangLab-main/bin__ into __[ANACONDA_PATH]/bin__. If you want to use WangLab in a specific python environment, substitute __ANACONDA_PATH__ to __ANACONDA_PATH/envs/ENV_NAME__.
 
+Finally, install required packages through `pip install -r WangLab-main/requirements.txt`
+
 Now users can call commands in WangLab in any path under specific python environment.
 
-__Note__: To use TIS/ChIP_seq modules, you need to mannually install __Bowtie__ and __MACS__ through:
+__Note__: To use TIS/ChIP_seq modules, you need to mannually install __Bowtie__, __samtools__ and  __MACS__ through:
 
 ```bash
 # install bowtie
@@ -25,6 +31,12 @@ conda install bowtie -c bioconda
 
 # apt
 sudo apt install bowtie
+
+```
+
+``` bash
+# install samtools
+conda install -c bioconda samtools
 ```
 
 ```bash
@@ -32,4 +44,12 @@ sudo apt install bowtie
 pip install macs3
 ```
 
-### 
+### For Windows users
+
+To install WangLab from source, users first download and extract .zip file from Github. Then, place the whole file folder __WangLab__ in __WangLab-main__ into __[ANACONDA_PATH/lib/python3.x/site-packages__. In the meanwhile, place the script file __wanglab__ in __WangLab-main/bin__ into __[ANACONDA_PATH]/scripts__. Finally, create a new txt file in __[ANACONDA_PATH]/scripts__ and write `python %~dp0/wanglab %*` in it. If you want to use WangLab in a specific python environment, substitute __ANACONDA_PATH__ to __ANACONDA_PATH/envs/ENV_NAME__.
+
+Finally, install required packages through `pip install -r WangLab-main/requirements.txt`
+
+Now users can call commands in WangLab in any path under specific python environment.
+
+On Windows OS, users are not able to use functions in TIS/ChIP_seq modules.
