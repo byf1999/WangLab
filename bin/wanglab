@@ -11,6 +11,7 @@ import argcomplete
 import sys
 import os
 
+from WangLab.Constants import *
 
 def main():
     argparser = prepare_argparser()
@@ -78,7 +79,7 @@ def main():
 
 
 def prepare_argparser():
-    description = "WangLab main executable."
+    description = f"WangLab main executable. Version: {VERSION}"
     epilog = "For command line options of each command, type: COMMAND -h"
     # top-level parser
     argparser = ap.ArgumentParser(description=description, epilog=epilog)
