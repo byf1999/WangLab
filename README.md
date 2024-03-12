@@ -13,7 +13,7 @@ The project contains 4 modules: [`Sequence_operate`](#Sequence_operate), [`TIS`]
 
 The easiest way to install WangLab in through PyPI. Please check the [INSTALL](./INSTALL.md) document for detail.
 
-In general, you can install through PyPI as `pip install macs3`. To use virtual environment is highly recommended. Or you can install after unzipping the released package downloaded from Github, then place scripts into corresponding folders of specific python environment.
+In general, you can install through PyPI as `pip install WangLab`. To use virtual environment is highly recommended. Or you can install after unzipping the released package downloaded from Github, then place scripts into corresponding folders of specific python environment.
 
 ## Usage
 
