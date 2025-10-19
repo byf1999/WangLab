@@ -1,0 +1,427 @@
+#!/usr/bin/env python
+"""
+Description: WangLab main executable.
+
+This code is free software; you can redistribute it and/or modify it
+under the terms of the MIT License (see the file LICENSE included with
+the distribution).
+"""
+import argparse as ap
+import argcomplete
+import sys
+import os
+
+from WangLab.Constants import *
+
+def main():
+    argparser = prepare_argparser()
+    argcomplete.autocomplete(argparser)  # Accomplish the autocomplete function in terminal
+    args = argparser.parse_args()
+
+    subcommand = args.subcommand
+    if subcommand == 'primer_generator':
+        from WangLab.Sequence_operate.primer_generator import check_args, run
+        check_args(args)
+        run(args)
+
+    elif subcommand == 'cutadapt':
+        run_cutadapt(args)
+
+    elif subcommand == 'bowtie':
+        run_bowtie(args)
+
+    elif subcommand == 'count_reads':
+        from WangLab.TIS.count_reads import main
+        main([args.subcommand, args.annot, args.chrom, args.cds_term, args.genome_length, args.dir])
+
+    elif subcommand == 'combine_reads':
+        from WangLab.TIS.combine_reads import main
+        main([args.subcommand, args.dir])
+
+    elif subcommand == 'macs':
+        from WangLab.ChIP_seq.macs import main
+        main([args.subcommand, args.treat, args.control, args.length], args.keepduplicates)
+
+    elif subcommand == 'calc_content':
+        from WangLab.Sequence_operate.calc_content import calc_content
+        calc_content_check_args(args)
+        calc_content(args.input_path, args.ref, n1=args.n1.upper(), n2=args.n2.upper(), fmt=args.fmt,
+                     output_path=args.output_path)
+
+    elif subcommand == 'file_merge':
+        from WangLab.Sequence_operate.file_merge import merge
+        merge(args)
+
+    elif subcommand == 'oss-util':
+        from WangLab.Sequence_operate.ossutil import download
+        download(args)
+
+    elif subcommand == 'extract_seqs':
+        from WangLab.Sequence_operate.extract_seqs import extract_content
+        extract_content(args.input_path, args.ref, fmt=args.fmt, output_path=args.output_path,
+                        translate_flag=args.trans)
+
+    elif subcommand == 'rna_seq':
+        from WangLab.RNA_seq.rna_seq import run
+        run(args)
+
+    elif subcommand == 'primer-blast':
+        from WangLab.Sequence_operate.primer_blast import primer_blast
+        primer_blast(args)
+
+    elif subcommand == 'qPCR':
+        from WangLab.Sequence_operate.qPCR import calc
+        calc(args)
+
+    else:
+        print(f'Command {subcommand} not recognized!')
+        return
+
+
+def prepare_argparser():
+    description = f"WangLab main executable. Version: {VERSION}"
+    epilog = "For command line options of each command, type: COMMAND -h"
+    # top-level parser
+    argparser = ap.ArgumentParser(description=description, epilog=epilog)
+
+    subparsers = argparser.add_subparsers(dest='subcommand')
+    subparsers.required = True
+
+    # command for 'primer_generator'
+    add_primer_generator(subparsers)
+
+    # command for 'cutadapt'
+    add_cutadapt(subparsers)
+
+    # command for 'bowtie'
+    add_bowtie(subparsers)
+
+    # command for 'count_reads'
+    add_count_reads(subparsers)
+
+    # command for 'combine_reads'
+    add_combine_reads(subparsers)
+
+    # command for 'macs'
+    add_macs(subparsers)
+
+    # command for 'calc_content'
+    add_calc_content(subparsers)
+
+    # command for 'file_merge'
+    add_file_merge(subparsers)
+
+    # command for 'oss-util'
+    add_oss_util(subparsers)
+
+    # command for 'extract_seqs'
+    add_extract_seqs(subparsers)
+
+    # command for 'rna_seq'
+    add_rna_seq(subparsers)
+
+    # coommand for 'primer-blast'
+    add_primer_blast(subparsers)
+
+    # command for 'qPCR'
+    add_qPCR(subparsers)
+
+    return argparser
+
+
+def add_qPCR(subparsers):
+    """Add function 'qPCR' argument parsers"""
+    name = 'qPCR'
+
+    from WangLab.Sequence_operate.qPCR import prepare_argparser
+    desc = 'Analyze qPCR data using 2^-delta_delta_Ct method'
+    argparser_qPCR = subparsers.add_parser(name, help=desc, formatter_class=ap.RawDescriptionHelpFormatter,
+                                           epilog=f"""Examples:
+        $ {os.path.basename(sys.argv[0])} {name} -i 2023-09-14_150158.xls -s="-1" -t gyrB 
+""")
+    prepare_argparser(argparser_qPCR)
+    return
+
+
+def add_primer_blast(subparsers):
+    """Add function 'primer-blast' argument parsers."""
+    name = "primer-blast"
+
+    from WangLab.Sequence_operate.primer_blast import prepare_argparser
+    desc = 'Input the sequence into NCBI primer-blast'
+    argparser_primer_blast = subparsers.add_parser(name, help=desc, formatter_class=ap.RawDescriptionHelpFormatter,
+                                                   epilog=f"""Examples:
+        $ {os.path.basename(sys.argv[0])} {name} -i outprimer.txt -r A.ve_genome.fasta -P 1 200 -p -200 0 -s 70 10000 
+
+    """)
+    prepare_argparser(argparser_primer_blast)
+    return
+
+
+def add_primer_generator(subparsers):
+    """Add function 'primer_generator' argument parsers."""
+    name = "primer_generator"
+
+    from WangLab.Sequence_operate.primer_generator import prepare_argparser
+    desc = 'Add overhangs to generate 4 primers used to construct in-frame deletion strains'
+    argparser_primer_generator = subparsers.add_parser(name, help=desc, formatter_class=ap.RawDescriptionHelpFormatter,
+                                                       epilog=f"""Examples:
+    $ {os.path.basename(sys.argv[0])} {name} -i input.txt -o output.txt -p pRE112
+""")
+    prepare_argparser(argparser_primer_generator)
+    return
+
+
+def add_cutadapt(subparsers):
+    """Add function 'cutadapt' argument parsers"""
+    name = 'cutadapt'
+
+    argparser_cutadapt = subparsers.add_parser(name, help='Cutadapt on NGS raw data',
+                                               formatter_class=ap.RawDescriptionHelpFormatter, epilog=f"""Examples:
+    $ {os.path.basename(sys.argv[0])} {name} -d . -p Tn5 -t tn-seq
+    $ {os.path.basename(sys.argv[0])} {name} -d . -p pSC189 -t tn-seq
+    $ {os.path.basename(sys.argv[0])} {name} -d . -t chip-seq
+""")
+    argparser_cutadapt.add_argument("-t", "--type", dest="data_type", type=str, required=True, nargs="?",
+                                    help="Data type, Tn-seq or ChIP-seq")
+    argparser_cutadapt.add_argument("-d", "--dir", dest="dir", type=str, required=True, nargs="?",
+                                    help="Directory of raw data")
+    argparser_cutadapt.add_argument("-p", "--plasmid", dest="plasmid", type=str, required=False, nargs="?",
+                                    help="Trasnposon plasmid name", default=None)
+
+    return
+
+
+def add_bowtie(subparsers):
+    """Add function 'bowtie' argument parsers"""
+    name = 'bowtie'
+
+    argparser_bowtie = subparsers.add_parser(name, formatter_class=ap.RawDescriptionHelpFormatter,
+                                             help='Bowtie on trimmed data', epilog=f"""Examples:
+        $ {os.path.basename(sys.argv[0])} {name} -d . -r genome.fa -@ 4 -t tn-seq
+        $ {os.path.basename(sys.argv[0])} {name} -d . -r genome.fa -@ 4 -t chip-seq
+    """)
+    argparser_bowtie.add_argument("-t", "--type", dest="data_type", type=str, required=True, nargs="?",
+                                  help="Data type, Tn-seq or ChIP-seq")
+    argparser_bowtie.add_argument("-d", "--dir", dest="dir", type=str, required=True, nargs="?",
+                                  help="Directory of trimmed data")
+    argparser_bowtie.add_argument("-r", "--ref", dest="reference", type=str, required=True, nargs="?",
+                                  help="reference file path")
+    argparser_bowtie.add_argument("-@", "--core", dest="num_cores", type=str, required=False, nargs="?",
+                                  help="Number of CPU cores used", default=2)
+    return
+
+
+def add_count_reads(subparsers):
+    """Add function 'count_reads' argument parsers"""
+    name = 'count_reads'
+
+    argparser_count_reads = subparsers.add_parser(name, help='Count reads from SAM files',
+                                                  formatter_class=ap.RawDescriptionHelpFormatter, epilog=f"""Examples:
+    $ {os.path.basename(sys.argv[0])} {name} -i genome.gff -c Chromosome -r "gene_id=(.+?);" -l 3763168 -d .
+    $ {os.path.basename(sys.argv[0])} {name} --annot genome.gff --chrom Chromosome --cds "gene_id=(.+?);" -l 3763168 -d .""")
+
+    argparser_count_reads.add_argument("-i", "--annot", dest="annot", type=str, required=True, nargs="?",
+                                       help="Annotation file, gff or gtf format")
+    argparser_count_reads.add_argument("-c", "--chrom", dest="chrom", type=str, required=True, nargs="?",
+                                       help="Chromosome name")
+    argparser_count_reads.add_argument("-r", "--cds", dest="cds_term", type=str, required=True, nargs="?",
+                                       help="CDS search term")
+    argparser_count_reads.add_argument("-l", "--length", dest="genome_length", type=str, required=True, nargs="?",
+                                       help="Genome length, used to specified the last intergenic region")
+    argparser_count_reads.add_argument("-d", "--dir", dest="dir", type=str, required=True, nargs="?",
+                                       help="Directory of SAM files")
+    return
+
+
+def add_combine_reads(subparsers):
+    name = 'combine_reads'
+
+    argparser_combine_reads = subparsers.add_parser(name, formatter_class=ap.RawDescriptionHelpFormatter,
+                                                    help='Combine reads from csv files generated by count_reads',
+                                                    epilog=f"""Example:
+    $ {os.path.basename(sys.argv[0])} {name} -d .""")
+
+    argparser_combine_reads.add_argument("-d", "--dir", dest="dir", type=str, required=True, nargs="?",
+                                         help="Directory of csv files")
+    return
+
+
+def add_macs(subparsers):
+    name = 'macs'
+
+    argparse_macs = subparsers.add_parser(
+        name, help='Call MACS3 software with some default parameters', formatter_class=ap.RawDescriptionHelpFormatter,
+        epilog=f"Examples: \n"
+               f"   $ {os.path.basename(sys.argv[0])} {name} -t treat.bam -c control.bam -l 3763016 \n"
+               f"   $ {os.path.basename(sys.argv[0])} {name} -t treat.bam -c control.bam -l eib202 --keep-dup all \n"
+               f"Default parameters: \n"
+               f"   q_value: 0.01; \n"
+               f"   mFold: [1,50]")
+    argparse_macs.add_argument("-t", '--treat', dest='treat', type=str, required=True, nargs="?",
+                               help='Treatment file(s)')
+    argparse_macs.add_argument("-c", '--control', dest='control', type=str, required=True, nargs="?",
+                               help='Control file(s)')
+    argparse_macs.add_argument("-l", '--length', dest='length', type=str, required=True, nargs="?",
+                               help='Effective genome length / bacterium name')
+    argparse_macs.add_argument("--keep-dup", dest='keepduplicates', type=str, required=False, nargs="?",
+                               help="It controls the behavior towards duplicate tags at the exact same location -- "
+                                    "the same coordination and the same strand. The 'auto' option makes MACS calculate "
+                                    "the maximum tags at the exact same location based on binomal distribution using "
+                                    "1e-5 as pvalue cutoff; and the 'all' option keeps every tags. If an integer is "
+                                    "given, at most this number of tags will be kept at the same location. Note, if "
+                                    "you've used samtools or picard to flag reads as 'PCR/Optical duplicate' in bit "
+                                    "1024, MACS3 will still read them although the reads may be decided by MACS3 as "
+                                    "duplicate later. If you plan to rely on samtools/picard/any other tool to filter "
+                                    "duplicates, please remove those duplicate reads and save a new alignment file then"
+                                    " ask MACS3 to keep all by '--keep-dup all'. The default is to keep one tag at the"
+                                    " same location. Default: 1",
+                               default='1')
+
+    return
+
+
+def add_calc_content(subparsers):
+    name = 'calc_content'
+
+    argparse_macs = subparsers.add_parser(
+        name, help='Calculate nucleotides content of given range of sequences',
+        formatter_class=ap.RawDescriptionHelpFormatter,
+        epilog=f"""Examples:
+    $ {os.path.basename(sys.argv[0])} {name} -i input.txt -r eib202.fa -n G C -f t
+    $ {os.path.basename(sys.argv[0])} {name} -i input.txt -r eib202.fa -n A T -f , -o output.txt 
+    
+The input file should contain 3 columns, each represent the name, start position and 
+end position of regions. The format of input file is specified by -f argument, default is 
+tab-separated.""")
+    argparse_macs.add_argument("-i", '--input', dest='input_path', type=str, required=True, nargs="?",
+                               help='Input file')
+    argparse_macs.add_argument("-r", '--reference', dest='ref', type=str, required=True, nargs="?",
+                               help='Reference sequence file')
+    argparse_macs.add_argument("-n", '--nucl', dest='nucl', type=str, required=False, nargs="+",
+                               help='Nucleotides that are counted, default G C', default='GC')
+    argparse_macs.add_argument("-f", '--fmt', dest='fmt', type=str, required=False, nargs="?",
+                               help='Input file format, default is separated by tab', default='t')
+    argparse_macs.add_argument("-o", '--output', dest='output_path', type=str, required=False, nargs="?",
+                               help='Output file path to write results, default stdout', default=None)
+
+
+def add_file_merge(subparsers):
+    """Add function 'file_merge' argument parsers."""
+    name = "file_merge"
+
+    from WangLab.Sequence_operate.file_merge import prepare_argparser
+    argparser_file_merge = subparsers.add_parser(name, help='Merge all files in specific format',
+                                                 formatter_class=ap.RawDescriptionHelpFormatter,
+                                                 epilog=f"""Examples:
+    $ {os.path.basename(sys.argv[0])} {name} -d ~/seqs -o output.fa -f fasta -a 0
+    $ {os.path.basename(sys.argv[0])} {name} -d ~/files -o output.txt -f txt -a 1
+""")
+    prepare_argparser(argparser_file_merge)
+    return
+
+
+def add_oss_util(subparsers):
+    """Add function 'oss-util argument parsers"""
+    name = 'oss-util'
+
+    from WangLab.Sequence_operate.ossutil import prepare_argparser
+    argparser_oss_util = subparsers.add_parser(name, help='Download HGS data using ossutil',
+                                               formatter_class=ap.RawDescriptionHelpFormatter,
+                                               epilog=f"""Examples:
+        $ {os.path.basename(sys.argv[0])} {name} -conf config.txt
+        $ {os.path.basename(sys.argv[0])} {name} --config config.txt
+    Content of config.txt:
+    AccessKeyId	AccessKeySecret	OSS_path	endpoint_path	local_dir
+    """)
+    prepare_argparser(argparser_oss_util)
+    return
+
+
+def add_extract_seqs(subparsers):
+    name = 'extract_seqs'
+
+    from WangLab.Sequence_operate.extract_seqs import __FLAG_DICT__
+    argparse_cmd = subparsers.add_parser(
+        name, help='Extract sequences of given range of sequences',
+        formatter_class=ap.RawDescriptionHelpFormatter,
+        epilog=f"""Examples:
+    $ {os.path.basename(sys.argv[0])} {name} -i input.txt -r eib202.fa -f t
+    $ {os.path.basename(sys.argv[0])} {name} -i input.txt -r eib202.fa -f , -o output.txt 
+    $ {os.path.basename(sys.argv[0])} {name} -i input.txt -r eib202.fa -f , -o output.txt --transform translate
+
+The input file should contain 3 columns, each represent the name, start position and 
+end position of regions. The format of input file is specified by -f argument, default is 
+tab-separated.""")
+    argparse_cmd.add_argument("-i", '--input', dest='input_path', type=str, required=True, nargs="?",
+                              help='Input file')
+    argparse_cmd.add_argument("-r", '--reference', dest='ref', type=str, required=True, nargs="?",
+                              help='Reference sequence file')
+    argparse_cmd.add_argument("-f", '--fmt', dest='fmt', type=str, required=False, nargs="?",
+                              help='Input file format, default is separated by tab', default='t')
+    argparse_cmd.add_argument("-o", '--output', dest='output_path', type=str, required=False, nargs="?",
+                              help='Output file path to write results, default stdout', default=None)
+    argparse_cmd.add_argument("-t", "--transform", dest='trans', type=str, required=False, nargs='?',
+                              help='Whether to transform sequences, default is No, supported transformation include: '
+                                   f'{list(__FLAG_DICT__.keys())}', default=None)
+
+
+def add_rna_seq(subparsers):
+    """Add function 'rna_seq' argument parsers"""
+    name = 'rna_seq'
+    
+    from WangLab.RNA_seq.rna_seq import prepare_argparser
+    argparser_rna_seq = subparsers.add_parser(name, help='Analysis of RNA-Seq data',
+                                              formatter_class=ap.RawDescriptionHelpFormatter, epilog=f"""Examples:
+    $ {os.path.basename(sys.argv[0])} {name} -d . -i eib202.fa -p 4
+    $ {os.path.basename(sys.argv[0])} {name} -d . -i eib202.fa -p 4 --remove_tmp False
+""")
+    prepare_argparser(argparser_rna_seq)
+    return
+
+
+def run_cutadapt(args):
+    if args.data_type.upper() == 'TN-SEQ':
+        if not args.plasmid:
+            print(f'Please enter transposon plasmid name.')
+            return
+        from WangLab.TIS.cutadapt import main
+        main([args.subcommand, args.dir], args.plasmid.upper())
+    elif args.data_type.upper() == 'CHIP-SEQ':
+        from WangLab.ChIP_seq.cutadapt_ChIP_Seq import main
+        main([args.subcommand, args.dir])
+
+    return
+
+
+def run_bowtie(args):
+    if args.data_type.upper() == 'TN-SEQ':
+        from WangLab.TIS.bowtie import main
+        main([args.subcommand, args.dir, args.reference, args.num_cores])
+    elif args.data_type.upper() == 'CHIP-SEQ':
+        from WangLab.ChIP_seq.bowtie_ChIP_Seq import main
+        main([args.subcommand, args.dir, args.reference, args.num_cores])
+
+    return
+
+
+def calc_content_check_args(args):
+    # modify nucls
+    if len(args.nucl) == 2:
+        args.n1, args.n2 = args.nucl
+    elif len(args.nucl) == 1:
+        if len(args.nucl[0]) == 2:
+            args.n1, args.n2 = args.nucl[0]
+        else:
+            print('Something is wrong in the nucleotides specified, please check. '
+                  'There should be only 2 nucleotides, and contiguous or separated by space.')
+            exit()
+    else:
+        print('Too many (>2) nucleotides are specified!')
+        exit()
+
+    return
+
+
+if __name__ == '__main__':
+    main()
